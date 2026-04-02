@@ -63,13 +63,13 @@ jobs:
           docker push ${{ secrets.DOCKER_USERNAME }}/springboot-app:latest
 
   deploy:
-    name: 🚀 Deploy to AWS VM
+    name: 🚀 Deploy to AWS
     runs-on: ubuntu-latest
     needs: docker
     if: github.ref == 'refs/heads/main'
 
     steps:
-      - name: 🚀 SSH Deploy
+      - name: SSH Deploy
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -77,15 +77,17 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: ${{ secrets.SERVER_PORT }}
           script: |
-            # Stop et supprimer l'ancien conteneur s'il existe
-            docker stop spring-app || true
-            docker rm spring-app || true
+            echo "🚀 Début du déploiement..."
 
             # Pull la dernière image Docker
             docker pull ${{ secrets.DOCKER_USERNAME }}/springboot-app:latest
 
-            # Run le conteneur
-            docker run -d -p 8080:8080 --name spring-app ${{ secrets.DOCKER_USERNAME }}/springboot-app:latest
+            # Stop et supprime le conteneur existant
+            docker stop spring-app || true
+            docker rm spring-app || true
 
-            # Vérification rapide
-            echo "🚀 Déploiement terminé avec succès !"
+            # Run le conteneur avec redémarrage automatique
+            docker run -d -p 8080:8080 --name spring-app --restart unless-stopped \
+              ${{ secrets.DOCKER_USERNAME }}/springboot-app:latest
+
+            echo "✅ Déploiement terminé ! L'application est en ligne sur le port 8080"
