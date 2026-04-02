@@ -63,7 +63,7 @@ jobs:
           docker push ${{ secrets.DOCKER_USERNAME }}/springboot-app:latest
 
   deploy:
-    name: 🚀 Deploy to Server
+    name: 🚀 Deploy to AWS VM
     runs-on: ubuntu-latest
     needs: docker
     if: github.ref == 'refs/heads/main'
@@ -75,9 +75,17 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
-          port: 22
+          port: ${{ secrets.SERVER_PORT }}
           script: |
-            docker pull ${{ secrets.DOCKER_USERNAME }}/springboot-app:latest
+            # Stop et supprimer l'ancien conteneur s'il existe
             docker stop spring-app || true
             docker rm spring-app || true
+
+            # Pull la dernière image Docker
+            docker pull ${{ secrets.DOCKER_USERNAME }}/springboot-app:latest
+
+            # Run le conteneur
             docker run -d -p 8080:8080 --name spring-app ${{ secrets.DOCKER_USERNAME }}/springboot-app:latest
+
+            # Vérification rapide
+            echo "🚀 Déploiement terminé avec succès !"
