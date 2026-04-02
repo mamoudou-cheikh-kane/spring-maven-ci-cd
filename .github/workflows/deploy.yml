@@ -80,5 +80,4 @@ jobs:
             docker pull ${{ secrets.DOCKER_USERNAME }}/springboot-app:latest
             docker stop spring-app || true
             docker rm spring-app || true
-            docker run -d -p 8080:8080 --name spring-app \
-              ${{ secrets.DOCKER_USERNAME }}/springboot-app:latest
+            docker run -d -p 8080:8080 --name spring-app ${{ secrets.DOCKER_USERNAME }}/springboot-app:latest
